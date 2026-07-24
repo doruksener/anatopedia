@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1110" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-izBxM8a/XZjC4ftr1ienbQsBAuHlIDAlTMPjMPyl+FY=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://raw.githubusercontent.com; worker-src 'self'; object-src 'none'; base-uri 'self';" />
+  <meta name="description" content="Anatopedia — katmanlı 3D anatomi keşfi ve isteğe bağlı görüntüleme çalışma alanı." />
+  <title>Anatopedia — Full Body Anatomy & Imaging Atlas</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div>
+          <div class="brand">Anatopedia</div>
+          <div class="brand-subtitle">3D ANATOMY · MRI · CT · CLINICAL</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <label class="search-box" for="global-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+          <input id="global-search" type="search" autocomplete="off" placeholder="Kalp, femur, sciatic nerve, liver…" />
+          <kbd>/</kbd>
+        </label>
+        <div id="search-results" class="search-results" hidden></div>
+      </div>
+
+      <div class="atlas-switches" aria-label="Atlas görünümü">
+        <div class="segmented-control" id="sex-switch">
+          <button type="button" data-sex="male" class="active">Erkek</button>
+          <button type="button" data-sex="female">Kadın</button>
+        </div>
+        <div class="segmented-control" id="view-switch">
+          <button type="button" data-view="anatomy" class="active">3D Anatomi</button>
+          <button type="button" data-view="imaging">Görüntüleme</button>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button id="reset-camera" class="icon-button" type="button" title="Kamerayı sıfırla" aria-label="Kamerayı sıfırla">
+          <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M5.1 15A8 8 0 0 0 18 18.9M18.9 9A8 8 0 0 0 6 5.1"/></svg>
+        </button>
+        <button id="toggle-help" class="icon-button" type="button" title="Kullanım" aria-label="Kullanım">
+          <svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.6c-.9.8-1.9 1.3-1.9 3M12 18h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <aside class="left-panel panel">
+      <section class="panel-section intro-section">
+        <div class="eyebrow">ANATOPEDIA ATLAS</div>
+        <h1>Deriden sinire, tek hareketle.</h1>
+        <p>Ana anatomik katmanlar başlangıçta hazırlanır; deri, yağ/fasya, kas, kemik, organ, damar ve sinir arasında tek bir derinlik sürgüsüyle ilerleyebilirsin.</p>
+      </section>
+
+      <section class="panel-section atlas-ready-section">
+        <div class="section-heading-row">
+          <div class="eyebrow">ATLAS READY</div>
+          <span id="preload-percent">0%</span>
+        </div>
+        <div class="progress-track compact"><div id="preload-bar"></div></div>
+        <div id="preload-copy" class="preload-copy">Ana yapılar hazırlanıyor…</div>
+        <button id="prepare-atlas" class="secondary-button wide" type="button">Tüm çekirdek atlası hazırla</button>
+      </section>
+
+      <section class="panel-section depth-section">
+        <div class="section-heading-row">
+          <div class="eyebrow">LAYER DEPTH</div>
+          <strong id="layer-depth-label">Deri</strong>
+        </div>
+        <input id="layer-depth" class="depth-range" type="range" min="0" max="8" step="1" value="8" />
+        <div class="depth-scale"><span>Deri</span><span>Kas</span><span>Organ</span><span>Sinir</span></div>
+        <label class="toggle-row"><input id="xray-outer" type="checkbox" checked /> <span>Dış katmanları saydamlaştır</span></label>
+      </section>
+
+      <section class="panel-section">
+        <div class="section-heading-row">
+          <div class="eyebrow">QUICK VIEWS</div>
+          <button id="clear-all" class="text-button" type="button">Tümünü temizle</button>
+        </div>
+        <div id="preset-grid" class="preset-grid"></div>
+      </section>
+
+      <section class="panel-section systems-section">
+        <div class="eyebrow">SYSTEM LAYERS</div>
+        <div id="system-list" class="system-list"></div>
+      </section>
+
+      <section class="panel-section region-section">
+        <div class="eyebrow">REGION FOCUS</div>
+        <div class="region-grid">
+          <button type="button" data-region="head">Baş</button>
+          <button type="button" data-region="thorax">Toraks</button>
+          <button type="button" data-region="abdomen">Abdomen</button>
+          <button type="button" data-region="pelvis">Pelvis</button>
+          <button type="button" data-region="upper">Üst ekstremite</button>
+          <button type="button" data-region="lower">Alt ekstremite</button>
+        </div>
+      </section>
+
+      <section class="panel-section source-section">
+        <div class="source-badge">CC BY-SA</div>
+        <p>3D kaynak: BodyParts3D / DBCLS. Model verisi açık lisanslıdır; ticari dağıtımda atıf ve share-alike koşulları korunmalıdır.</p>
+      </section>
+    </aside>
+
+    <main class="viewer-stage">
+      <canvas id="scene-canvas"></canvas>
+
+      <div class="viewer-gradient"></div>
+      <div class="viewer-status-row">
+        <div id="catalog-status" class="status-pill"><span class="pulse"></span>Katalog hazırlanıyor…</div>
+        <div id="geometry-status" class="status-pill secondary">0 yapı yüklü</div>
+      </div>
+
+      <div class="viewer-toolbar" aria-label="3D araçları">
+        <button id="fit-loaded" type="button" title="Yüklü yapıları kadraja al">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+          <span>Kadraja al</span>
+        </button>
+        <button id="isolate-selected" type="button" title="Seçili yapıyı izole et" disabled>
+          <svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
+          <span>İzole et</span>
+        </button>
+        <button id="hide-selected" type="button" title="Seçili yapıyı gizle" disabled>
+          <svg viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.2A10.7 10.7 0 0 1 12 4c5 0 9 4 10 8a12.7 12.7 0 0 1-2 3.8M6.6 6.6A12 12 0 0 0 2 12c1 4 5 8 10 8 1.3 0 2.6-.3 3.7-.8"/></svg>
+          <span>Gizle</span>
+        </button>
+        <button id="show-all" type="button" title="Gizlenen yapıları göster">
+          <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+          <span>Göster</span>
+        </button>
+      </div>
+
+      <div class="section-tools" id="section-tools">
+        <button id="toggle-section" type="button">Kesit düzlemi</button>
+        <select id="section-axis" aria-label="Kesit yönü">
+          <option value="z">Aksiyel</option>
+          <option value="y">Koronal</option>
+          <option value="x">Sagittal</option>
+        </select>
+        <input id="section-position" type="range" min="-1" max="1" step="0.01" value="0" disabled />
+      </div>
+
+      <section id="imaging-stage" class="imaging-stage" hidden>
+        <div class="imaging-header">
+          <div>
+            <div class="eyebrow">IMAGING WORKSPACE</div>
+            <h2 id="imaging-title">Erkek · MR workspace</h2>
+          </div>
+          <div class="imaging-controls">
+            <select id="imaging-modality">
+              <option value="mri-t1">MR T1</option>
+              <option value="mri-t2">MR T2</option>
+              <option value="anatomical">Renkli anatomik kesit</option>
+            </select>
+            <select id="imaging-region">
+              <option value="all">Tüm örnekler</option>
+              <option value="head">Baş</option>
+              <option value="thorax">Toraks</option>
+              <option value="abdomen">Abdomen</option>
+              <option value="pelvis">Pelvis</option>
+              <option value="thigh">Uyluk</option>
+              <option value="feet">Ayak</option>
+            </select>
+          </div>
+        </div>
+        <div class="scan-frame">
+          <div class="scan-ruler left"></div>
+          <img id="scan-image" alt="Görüntüleme çalışma alanı yer tutucusu" />
+          <canvas id="scan-overlay"></canvas>
+          <div class="scan-labels"><span id="scan-left">R</span><span id="scan-right">L</span></div>
+        </div>
+        <div class="scan-footer">
+          <label>Kesit <input id="scan-slice" type="range" min="0" max="4" step="1" value="0" /></label>
+          <label>Kontrast <input id="scan-contrast" type="range" min="80" max="180" step="1" value="112" /></label>
+          <label>Renkli doku haritası <input id="scan-colorize" type="checkbox" /></label>
+        </div>
+        <p id="scan-note" class="scan-note">Bu depoya tıbbi görüntü verisi dahil değildir. Yalnızca lisanslı ve kimliksizleştirilmiş yerel verileri kullanın.</p>
+      </section>
+
+      <div id="empty-state" class="empty-state">
+        <div class="empty-orbit"><span></span><span></span><span></span><i></i></div>
+        <div class="eyebrow">ANATOPEDIA CORE ATLAS</div>
+        <h2>Tam vücut hazırlanıyor.</h2>
+        <p>Ana katmanlar otomatik yüklenir. İlk hazırlık tamamlandığında deri → sinir arasında beklemeden geçiş yapabilirsin.</p>
+        <button id="start-overview" class="primary-button" type="button">Çekirdek atlası şimdi hazırla</button>
+      </div>
+
+      <div id="loading-drawer" class="loading-drawer" hidden>
+        <div class="loading-header">
+          <div>
+            <div class="eyebrow">STREAMING 3D DATA</div>
+            <strong id="loading-title">Yapılar yükleniyor</strong>
+          </div>
+          <button id="cancel-loading" class="text-button" type="button">Kuyruğu durdur</button>
+        </div>
+        <div class="progress-track"><div id="progress-bar"></div></div>
+        <div id="loading-detail" class="loading-detail"></div>
+      </div>
+
+      <div class="orientation-cube" aria-hidden="true">
+        <div>ANT</div><span>R</span><span>L</span>
+      </div>
+    </main>
+
+    <aside class="right-panel panel">
+      <section class="selection-hero">
+        <div class="selection-system" id="selected-system">STRUCTURE</div>
+        <h2 id="selected-name">Bir yapıya dokun</h2>
+        <div id="selected-latin" class="latin-name">3D sahnedeki gerçek anatomik mesh seçilebilir.</div>
+      </section>
+
+      <section class="panel-section selected-actions">
+        <button id="toggle-selected-visibility" type="button" disabled>Görünürlüğü değiştir</button>
+        <button id="remove-selected" type="button" disabled>Sahneden kaldır</button>
+      </section>
+
+      <section class="panel-section info-tabs-section">
+        <div class="tab-list" role="tablist">
+          <button class="tab active" data-tab="anatomy" type="button">Anatomi</button>
+          <button class="tab" data-tab="clinical" type="button">Klinik</button>
+          <button class="tab" data-tab="data" type="button">Veri</button>
+        </div>
+
+        <div id="tab-anatomy" class="tab-panel active">
+          <div class="info-card">
+            <div class="info-label">TANIM</div>
+            <p id="anatomy-description">Bir mesh seçildiğinde sistem, adı ve anatomik sistemini gösterir. Doğrulanmış sürümde açıklamalar uzman doğrulamalı bilgi grafiğinden gelecektir.</p>
+          </div>
+          <div class="info-card compact">
+            <div class="info-label">FMA ID</div>
+            <code id="selected-id">—</code>
+          </div>
+          <div class="info-card compact">
+            <div class="info-label">YÜKLÜ GEOMETRİ</div>
+            <div id="mesh-stats">—</div>
+          </div>
+        </div>
+
+        <div id="tab-clinical" class="tab-panel">
+          <div id="clinical-content" class="clinical-content">
+            <div class="clinical-note">
+              <strong>Eğitim modu</strong>
+              <p>Anatopedia teşhis koymaz. Ağrı ve klinik bağlantılar, ancak hekim/fizyoterapist onaylı içerik eklendiğinde yayımlanmalıdır.</p>
+            </div>
+            <div class="pain-map-list">
+              <button type="button" data-clinical-region="head">Baş ve boyun</button>
+              <button type="button" data-clinical-region="shoulder">Omuz ve üst ekstremite</button>
+              <button type="button" data-clinical-region="back">Omurga ve sırt</button>
+              <button type="button" data-clinical-region="abdomen">Karın ve pelvis</button>
+              <button type="button" data-clinical-region="knee">Diz ve alt ekstremite</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-data" class="tab-panel">
+          <div class="info-card">
+            <div class="info-label">MODEL SOURCE</div>
+            <p>Varsayılan 3D mesh kaynağı BodyParts3D erkek atlasıdır. Kadın 3D geometrisi ve tıbbi görüntü verileri bu depoya dahil değildir. Harici veri eklemeden önce lisans, gizlilik ve kimliksizleştirme şartlarını doğrulayın.</p>
+          </div>
+          <a id="source-link" class="source-link disabled" href="#" target="_blank" rel="noopener noreferrer">Kaynak mesh dosyasını aç ↗</a>
+        </div>
+      </section>
+
+      <section class="panel-section loaded-section">
+        <div class="section-heading-row">
+          <div class="eyebrow">LOADED STRUCTURES</div>
+          <span id="loaded-count">0</span>
+        </div>
+        <div id="loaded-list" class="loaded-list">
+          <div class="loaded-placeholder">Yüklenen yapılar burada görünür.</div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <dialog id="help-dialog" class="help-dialog">
+    <button id="close-help" class="dialog-close" type="button" aria-label="Kapat">×</button>
+    <div class="eyebrow">HOW TO USE</div>
+    <h2>Anatopedia kullanım kılavuzu</h2>
+    <div class="help-grid">
+      <div><span>01</span><strong>Döndür</strong><p>Sol tık veya tek parmakla insan modelinin çevresinde dön.</p></div>
+      <div><span>02</span><strong>Yaklaş</strong><p>Mouse tekeri veya iki parmakla bölgeye yakınlaş.</p></div>
+      <div><span>03</span><strong>Katman ekle</strong><p>Katman derinliği sürgüsüyle deriden sinire ilerle; sistemler arka planda hazırlanır.</p></div>
+      <div><span>04</span><strong>Yapı seç</strong><p>Mesh üzerine dokun; sağ panelde kimliği ve geometri bilgisi açılır.</p></div>
+    </div>
+    <p class="dialog-footnote">Not: Tüm yüksek çözünürlüklü yapıları aynı anda GPU belleğine koymak tarayıcıyı çökertir. Anatopedia çekirdek atlası arka planda önbelleğe alır; görünür katmanlar GPU’ya, diğerleri hızlı erişim için diske hazırlanır.</p>
+  </dialog>
+
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Imaging dataset placeholder</title>
+  <desc id="desc">A neutral schematic indicating that no medical imaging data is bundled.</desc>
+  <rect width="1200" height="900" fill="#07100e"/>
+  <g fill="none" stroke="#35534b" stroke-width="2" opacity="0.7">
+    <ellipse cx="600" cy="450" rx="305" ry="360"/>
+    <ellipse cx="600" cy="450" rx="220" ry="285"/>
+    <ellipse cx="600" cy="450" rx="135" ry="195"/>
+    <path d="M220 450h760M600 90v720" stroke-dasharray="10 14"/>
+  </g>
+  <circle cx="600" cy="450" r="7" fill="#85cbb6"/>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="600" y="405" fill="#d8e5e0" font-size="34" font-weight="700">IMAGING DATASET NOT BUNDLED</text>
+    <text x="600" y="455" fill="#8fa9a1" font-size="20">Add only licensed, de-identified local data.</text>
+    <text x="600" y="500" fill="#617870" font-size="16">This image is a schematic placeholder, not a medical scan.</text>
+  </g>
+</svg>
