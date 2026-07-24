@@ -1,21 +1,25 @@
 # Anatopedia
 
-Anatopedia is a browser-based 3D anatomy explorer built with Three.js. It loads
-selected BodyParts3D structures, groups them into anatomical systems, and lets
-users rotate, isolate, search, hide, and adjust layer opacity.
+Anatopedia is a browser-based, layered 3D human anatomy explorer built with Three.js. It is an early technical prototype for exploring anatomical structures, systems, regions, clipping planes, and future expert-reviewed educational content.
 
-## Current scope
+> **Current status:** public alpha / research prototype. It is not a finished anatomy curriculum, diagnostic product, or medical device.
 
-- layered 3D anatomy viewer;
-- structure search using FMA identifiers and names;
-- system presets for skeleton, muscles, organs, vessels, nerves, and skin;
-- clipping planes for axial, coronal, and sagittal exploration;
-- optional local model cache for faster repeated use;
-- an imaging workspace placeholder for future licensed datasets.
+## Current capabilities
 
-The default segmented 3D source is an adult male BodyParts3D atlas. A female 3D
-atlas and medical imaging datasets are **not** bundled. The application does not
-relabel male geometry as female anatomy.
+- load real BodyParts3D STL structures;
+- rotate, zoom, select, isolate, hide, and remove meshes;
+- search structures by English name or FMA identifier;
+- explore skeleton, muscles, organs, vessels, nerves, lymphatic structures, skin, fascia, cartilage, and ligaments;
+- adjust system opacity and move from outer to deeper layers;
+- use axial, coronal, and sagittal clipping planes;
+- cache a selected local model subset for faster repeated use;
+- open a placeholder imaging workspace for future licensed MR/CT datasets.
+
+## Anatomical scope
+
+The default segmented 3D source is an adult male BodyParts3D atlas. A separate, validated female 3D atlas is **not** bundled. Anatopedia does not relabel male geometry as female anatomy.
+
+The imaging workspace contains only an original schematic placeholder. No real MR, CT, DICOM, NIfTI, patient image, or third-party anatomical slice is included.
 
 ## Run on Windows
 
@@ -24,50 +28,51 @@ relabel male geometry as female anatomy.
 3. Keep the terminal window open while using the application.
 4. The browser should open automatically.
 
-Do not open `index.html` directly with `file://`; ES modules and model requests
-require a local HTTP server.
+Do not open `index.html` directly with `file://`. ES modules and model requests require a local HTTP server.
 
-### Optional local model preparation
+## Optional local model preparation
 
-Run `ANATOPEDIA_VERI_HAZIRLA.bat` once to download a selected BodyParts3D subset
-to `models/stl/`. These large files are ignored by Git and are not included in
-the public repository.
+Double-click `ANATOPEDIA_VERI_HAZIRLA.bat` and choose:
+
+- **1 — Fast core package:** downloads a practical subset of commonly used structures.
+- **2 — Core package + skin:** also downloads the large skin mesh.
+
+Downloaded STL files and `models/stl/manifest.json` stay local and are ignored by Git. The public repository does not bundle third-party anatomy meshes.
 
 ## Data and licensing
 
-The repository contains application code and an original schematic placeholder.
-It does not contain third-party anatomy meshes or medical images.
-
-- Application code: MIT License.
-- BodyParts3D data downloaded at runtime: CC BY-SA 2.1 Japan.
+- Original Anatopedia application code: MIT License.
+- BodyParts3D data downloaded at runtime or locally: CC BY-SA 2.1 Japan.
 - Three.js: MIT License.
 
-See `THIRD_PARTY_NOTICES.md` before redistributing downloaded or converted model
-data.
+The MIT license applies to Anatopedia's original code, not to downloaded BodyParts3D geometry. See `THIRD_PARTY_NOTICES.md` and `docs/DATASETS.md` before redistributing models or adding datasets.
 
 ## Safety and limitations
 
-Anatopedia is an educational project, not a diagnostic tool or medical device.
-Do not commit patient data, credentials, proprietary datasets, or unlicensed
-media. See `DISCLAIMER.md` and `SECURITY.md`.
+Anatopedia is an educational software project. It is not intended to diagnose, treat, prevent, monitor, or make decisions about disease or injury.
+
+Do not commit patient data, credentials, proprietary datasets, DICOM/NIfTI files, or unlicensed media. Clinical and pain-related content must be source-cited and reviewed by qualified experts before release. See `DISCLAIMER.md` and `SECURITY.md`.
 
 ## Repository layout
 
 ```text
-assets/                 Original local UI assets
-data/                   Optional expert-reviewed content files
-docs/                   Dataset integration notes
-models/stl/              Local downloaded meshes; ignored by Git
-tools/                   Dataset preparation scripts
-app.js                   Viewer logic
-index.html               Application shell
-styles.css               Interface styles
+assets/                         Original UI and placeholder assets
+data/                           Optional expert-reviewed content files
+docs/                           Dataset and integration documentation
+models/stl/                     Locally downloaded meshes; ignored by Git
+tools/                          Dataset preparation utilities
+ANATOPEDIA_BASLAT.bat           Windows launcher
+ANATOPEDIA_VERI_HAZIRLA.bat     Optional model preparation launcher
+app.js                          Viewer logic
+index.html                      Application shell
+styles.css                      Interface styles
 ```
 
 ## Known limitations
 
-- automatic name-based system classification is imperfect;
-- the full atlas is too large to keep entirely in GPU memory;
-- female 3D anatomy is not included;
-- imaging data is not included;
-- anatomy and clinical text require expert review before educational release.
+- structure-to-system classification is currently name-based and imperfect;
+- the complete atlas is too large to keep entirely in browser GPU memory;
+- a validated female 3D anatomy atlas is not included;
+- real medical imaging data is not included;
+- anatomy and clinical text require expert review and source versioning;
+- production development should move toward optimized GLB/Meshopt assets, a versioned anatomy knowledge graph, and explicit dataset adapters.

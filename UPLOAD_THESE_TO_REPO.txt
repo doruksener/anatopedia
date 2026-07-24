@@ -1,0 +1,24 @@
+ANATOPEDIA REPO DÜZELTME PAKETİ
+================================
+
+Bu paketin İÇİNDEKİ dosya ve klasörleri GitHub deposunun ana dizinine yükleyin.
+Dıştaki "anatopedia-repo-fixes" klasörünü tek klasör olarak yüklemeyin.
+
+Repo köküne gelecek dosyalar:
+- README.md                         (mevcut README'nin yerine geçecek)
+- ANATOPEDIA_VERI_HAZIRLA.bat       (mevcut dosyanın yerine geçecek)
+
+Klasörleriyle birlikte eklenecekler:
+- assets/imaging-placeholder.svg
+- data/clinical-content.json
+- docs/DATASETS.md
+- models/stl/.gitkeep
+- tools/prepare_anatopedia_data.py
+
+GitHub adımları:
+1. https://github.com/doruksener/anatopedia adresini açın.
+2. Add file > Upload files seçin.
+3. Bu paketi açın ve İÇİNDEKİ her şeyi sürükleyin.
+4. GitHub dosya yollarını koruyacaktır.
+5. Commit message: Fix missing runtime assets and data preparation tools
+6. Commit changes düğmesine basın.
