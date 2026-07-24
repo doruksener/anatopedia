@@ -1,0 +1,32 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Downloaded anatomy data
+models/stl/*.stl
+models/stl/manifest.json
+!models/stl/.gitkeep
+
+# Medical imaging data — never commit patient data
+imaging/
+*.dcm
+*.dicom
+*.nii
+*.nii.gz
+
+# Python and OS files
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+.tmp/
+tmp/
